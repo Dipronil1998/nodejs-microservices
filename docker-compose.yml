@@ -1,0 +1,19 @@
+version: '3'
+services:
+  auth:
+    build: ./auth
+    ports:
+      - '3001:3001'
+
+  payment:
+    build: ./payment
+    ports:
+      - '3002:3002'
+
+  nginx:
+    build: ./nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - auth
+      - payment
