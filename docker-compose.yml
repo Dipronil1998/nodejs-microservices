@@ -20,17 +20,23 @@ services:
       - ./auth:/app
       - /app/node_modules
 
-  # post:
-  #   build: ./post
+  post:
+    build: ./post
 
-  #   ports:
-  #     - '3002:3002'
+    ports:
+      - '3002:3002'
 
-  #   depends_on:
-  #     - post-db
+    depends_on:
+      - post-db
 
-  #   environment:
-  #     MONGO_URL: mongodb://post-db:27017/postdb
+    environment:
+      PORT: 3002
+      JWT_SECRET: dipronil_secret_key
+      MONGO_URL: mongodb://post-db:27017/postdb
+
+    volumes:
+      - ./post:/app
+      - /app/node_modules
 
   # nginx:
   #   build: ./nginx
@@ -51,15 +57,15 @@ services:
     volumes:
       - auth-data:/data/db
 
-  # post-db:
-  #   image: mongo
+  post-db:
+    image: mongo
 
-  #   ports:
-  #     - '27018:27017'
+    ports:
+      - '27018:27017'
 
-  #   volumes:
-  #     - post-data:/data/db
+    volumes:
+      - post-data:/data/db
 
 volumes:
   auth-data:
-  # post-data:
+  post-data:
