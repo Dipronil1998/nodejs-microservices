@@ -1,12 +1,13 @@
-import mongoose from 'mongoose' ;
+import mongoose from "mongoose";
 
-const connectToMongoDB = async ()=>{
-    try {
-		await mongoose.connect(process.env.MONGO_URI );
-		console.log("Connected to MongoDB for Auth service");
-	} catch (error) {
-		console.error("Error connecting to MongoDB");
-	}
-}
+const connectToMongoDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    console.log("Connected to MongoDB for Auth service");
+  } catch (error) {
+    console.error("MongoDB Connection Error:", error);
+    process.exit(1);
+  }
+};
 
 export default connectToMongoDB;

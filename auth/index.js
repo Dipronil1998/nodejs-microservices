@@ -1,11 +1,14 @@
-import express from 'express';
 import dotenv from 'dotenv'
-import connectToMongoDB from './src/db/connector.js';
 dotenv.config()
-connectToMongoDB();
+import express from 'express';
+
+import connectToMongoDB from './src/db/connector.js';
+
+
 const app = express();
 const port = process.env.PORT || 5001;
 import auth from './src/routes/userRoutes.js'
+connectToMongoDB();
 app.use(express.json());
 
 app.get('/', (req, res) => {

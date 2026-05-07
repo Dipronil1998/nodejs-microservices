@@ -1,19 +1,65 @@
-version: '3'
+version: '3.9'
+
 services:
+
   auth:
     build: ./auth
+
     ports:
       - '3001:3001'
 
-  payment:
-    build: ./payment
-    ports:
-      - '3002:3002'
-
-  nginx:
-    build: ./nginx
-    ports:
-      - '80:80'
     depends_on:
-      - auth
-      - payment
+      - auth-db
+
+    environment:
+      PORT: 3001
+      MONGO_URL: mongodb://auth-db:27017/authdb
+      JWT_SECRET: dipronil_secret_key
+
+    volumes:
+      - ./auth:/app
+      - /app/node_modules
+
+  # post:
+  #   build: ./post
+
+  #   ports:
+  #     - '3002:3002'
+
+  #   depends_on:
+  #     - post-db
+
+  #   environment:
+  #     MONGO_URL: mongodb://post-db:27017/postdb
+
+  # nginx:
+  #   build: ./nginx
+
+  #   ports:
+  #     - '80:80'
+
+  #   depends_on:
+  #     - auth
+  #     - post
+
+  auth-db:
+    image: mongo
+
+    ports:
+      - '27017:27017'
+
+    volumes:
+      - auth-data:/data/db
+
+  # post-db:
+  #   image: mongo
+
+  #   ports:
+  #     - '27018:27017'
+
+  #   volumes:
+  #     - post-data:/data/db
+
+volumes:
+  auth-data:
+  # post-data:
