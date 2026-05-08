@@ -38,15 +38,15 @@ services:
       - ./post:/app
       - /app/node_modules
 
-  # nginx:
-  #   build: ./nginx
+  nginx:
+    build: ./nginx
 
-  #   ports:
-  #     - '80:80'
+    ports:
+      - '80:80'
 
-  #   depends_on:
-  #     - auth
-  #     - post
+    depends_on:
+      - auth
+      - post
 
   auth-db:
     image: mongo
