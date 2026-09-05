@@ -3,8 +3,11 @@ import { createPost, deletePost, getAllPosts, updatePost } from '../controllers/
 
 const router = express.Router();
 
-router.post('/', createPost);
+
 router.get('/', getAllPosts);
+
+
+router.post('/', createPost);
 router.put('/:id', updatePost);
 router.delete('/:id', deletePost);
 
