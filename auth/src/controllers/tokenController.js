@@ -60,3 +60,30 @@ export const createAccessToken = async (req, res) => {
         });
     }
 };
+
+export const verifyJWT = (req, res) => {
+    const token = req.cookies.accessToken;
+
+    if (!token) {
+        return res.status(401).json({
+            status: false,
+            message: 'No access token provided'
+        });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
+        req.user = decoded; // Attach user info to request object
+        return res.status(200).json({
+            status: true,
+            message: 'Access token is valid',
+            data: decoded
+        });
+    } catch (error) {
+        console.error('Error verifying access token:', error);
+        return res.status(401).json({
+            status: false,
+            message: 'Invalid or expired access token'
+        });
+    }
+};
