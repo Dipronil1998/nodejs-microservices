@@ -62,6 +62,10 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
+        await redisClient.set(`refreshToken:${user._id}`, refreshToken, {
+            EX: 30 * 24 * 60 * 60, // 30 days
+        });
+
         res.status(200).json({ message: 'Login successful', user, accesstoken, refreshToken });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
@@ -134,3 +138,14 @@ export const verifyOtp = async (req, res) => {
     }
 };
 
+
+export const logout = async (req, res) => {
+    try {
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        return res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+        console.error('Error during logout:', error);
+        return res.status(500).json({ message: 'Server error', error });
+    }
+}

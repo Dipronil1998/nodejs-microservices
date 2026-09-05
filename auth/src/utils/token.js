@@ -6,7 +6,7 @@ const accessTokenGenerate = (user) =>{
             id: user._id,
             email: user.email
           },
-          process.env.JWT_SECRET,
+          process.env.JWT_SECRET_ACCESS,
           {
             expiresIn: "15m"
           }
@@ -19,7 +19,7 @@ const refreshTokenGenerate = (user) =>{
           {
             id: user._id,
           },
-          process.env.JWT_SECRET,
+          process.env.JWT_SECRET_REFRESH,
           {
             expiresIn: "30d"
           }

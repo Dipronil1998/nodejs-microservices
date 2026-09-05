@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
+        const authHeader = req.cookies.accessToken;
+        console.log(authHeader," authHeader");
+        
 
         if (!authHeader) {
             return res.status(401).json({
@@ -10,11 +12,10 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-        const token = authHeader.split(" ")[1];
 
         const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
+            authHeader,
+            process.env.JWT_SECRET_ACCESS
         );
 
         req.user = decoded;
