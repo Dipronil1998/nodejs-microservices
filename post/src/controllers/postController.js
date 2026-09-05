@@ -4,9 +4,12 @@ import axios from "axios";
 export const createPost = async (req, res) => {
   try {
     const { title, content, image } = req.body;
+    const userId = req.headers["x-User-id"];
+    console.log(userId,"DPPPPP",req.headers);
+    
 
     const post = await Post.create({
-      userId: req.user.id,
+      userId,
       title,
       content,
       image

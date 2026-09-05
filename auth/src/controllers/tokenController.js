@@ -74,6 +74,10 @@ export const verifyJWT = (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
         req.user = decoded; // Attach user info to request object
+
+        res.setHeader("X-User-Id", decoded.id);
+        console.log("X-User-Id", decoded.id);
+
         return res.status(200).json({
             status: true,
             message: 'Access token is valid',
