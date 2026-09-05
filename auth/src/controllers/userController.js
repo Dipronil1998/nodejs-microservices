@@ -1,8 +1,9 @@
-import User from '../models/user.js';  
+import User from '../models/user.js';
 import OTP from '../models/otp.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from "jsonwebtoken";
+import { redisClient } from '../config/redis.js';
 
 export const register = async (req, res) => {
   try {
@@ -72,13 +73,13 @@ export const generateOtp = async (req, res) => {
 
     const otp = crypto.randomInt(100000, 999999).toString();
 
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); 
-
-    const newOtp = new OTP({ userId: user._id, otp, expiresAt });
-    await newOtp.save();
+    await redisClient.set(`otp:${user._id}`, otp, {
+      EX: 5 * 60, // 5 minutes
+    });
 
     res.status(200).json({ message: 'OTP generated successfully', otp });
   } catch (error) {
+    console.error('Error generating OTP:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -89,27 +90,41 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({
+        message: 'User not found',
+      });
     }
 
-    const otpRecord = await OTP.findOne({ userId: user._id, otp });
-    if (!otpRecord) {
-      return res.status(400).json({ message: 'Invalid OTP' });
+    const storedOtp = await redisClient.get(`otp:${user._id}`);;
+
+    // OTP doesn't exist or doesn't match
+    if (!storedOtp || storedOtp !== otp) {
+      return res.status(400).json({
+        message: 'Invalid OTP',
+      });
     }
 
-    if (otpRecord.expiresAt < Date.now()) {
-      return res.status(400).json({ message: 'OTP expired' });
-    }
-
+    // Verify user
     user.isVerified = true;
     await user.save();
 
-    await OTP.deleteOne({ _id: otpRecord._id });
+    // Delete OTP after successful verification
+    await redisClient.del(`otp:${user._id}`);
 
-    res.status(200).json({ message: 'OTP verified successfully', user });
+    return res.status(200).json({
+      message: 'OTP verified successfully',
+      user,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    console.error('Error verifying OTP:', error);
+
+    return res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    });
   }
 };
 

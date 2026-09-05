@@ -1,0 +1,1 @@
+auth DB MONGO GUI => mongodb://localhost:27017/authdb
