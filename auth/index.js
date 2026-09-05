@@ -8,7 +8,9 @@ import connectToMongoDB from './src/db/connector.js';
 const app = express();
 const port = process.env.PORT || 5001;
 import auth from './src/routes/userRoutes.js'
+import { connectRedis } from './src/config/redis.js';
 connectToMongoDB();
+connectRedis();
 app.use(express.json());
 
 app.get('/', (req, res) => {

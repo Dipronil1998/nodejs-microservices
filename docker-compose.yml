@@ -10,11 +10,13 @@ services:
 
     depends_on:
       - auth-db
+      - redis
 
     environment:
       PORT: 3001
       MONGO_URL: mongodb://auth-db:27017/authdb
       JWT_SECRET: dipronil_secret_key
+      REDIS_CLIENT_URL: redis://redis:6379
 
     volumes:
       - ./auth:/app
@@ -28,11 +30,13 @@ services:
 
     depends_on:
       - post-db
+      - redis
 
     environment:
       PORT: 3002
       JWT_SECRET: dipronil_secret_key
       MONGO_URL: mongodb://post-db:27017/postdb
+      REDIS_CLIENT_URL: redis://redis:6379
 
     volumes:
       - ./post:/app
@@ -66,6 +70,19 @@ services:
     volumes:
       - post-data:/data/db
 
+  redis:
+    image: redis:7-alpine
+
+    ports:
+      - '6379:6379'
+
+    volumes:
+      - redis-data:/data
+
+    command: redis-server --appendonly yes
+
+
 volumes:
   auth-data:
   post-data:
+  redis-data:
