@@ -1,4 +1,5 @@
 import Product from "../models/product.js";
+import Category from "../models/category.js";
 import axios from "axios";
 
 export const createProduct = async (req, res) => {
@@ -19,6 +20,15 @@ export const createProduct = async (req, res) => {
       return res.status(401).json({
         message: "Unauthorized: User ID not found in headers"
       });
+    }
+
+    if (categoryId) {
+      const categoryExists = await Category.findById(categoryId);
+      if (!categoryExists) {
+        return res.status(404).json({
+          message: "Category not found"
+        });
+      }
     }
 
     const product = await Product.create({
@@ -47,6 +57,7 @@ export const createProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find()
+      .populate("categoryId")
       .sort({ createdAt: -1 });
 
     const updatedProducts = await Promise.all(
@@ -93,7 +104,7 @@ export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).populate("categoryId");
 
     if (!product) {
       return res.status(404).json({
@@ -170,6 +181,16 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({
         message: "You can update only your own product"
       });
+    }
+
+    if (categoryId !== undefined && categoryId !== null && categoryId !== "") {
+      const categoryExists = await Category.findById(categoryId);
+      if (!categoryExists) {
+        return res.status(404).json({
+          message: "Category not found"
+        });
+      }
+      product.categoryId = categoryId;
     }
 
     // শুধু যেসব field পাঠানো হয়েছে সেগুলো update হবে
