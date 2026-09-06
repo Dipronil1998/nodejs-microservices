@@ -1,4 +1,6 @@
 import User from '../models/user.js';
+import Role from '../models/role.js';
+import UserRole from '../models/userRole.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
@@ -19,14 +21,35 @@ export const register = async (req, res) => {
         const user = new User({
             username,
             email,
-            password: hashedPassword,
-            ...(role && { role })
+            password: hashedPassword
         });
         await user.save();
 
-        res.status(201).json({ message: 'User registered successfully', user });
+        const roleName = (role || 'user').toLowerCase().trim();
+        let roleDoc = await Role.findOne({ name: roleName });
+        if (!roleDoc) {
+            roleDoc = await Role.create({ name: roleName });
+        }
+
+        await UserRole.create({
+            userId: user._id,
+            roleId: roleDoc._id
+        });
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                isVerified: user.isVerified,
+                roles: [roleDoc.name],
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        res.status(500).json({ message: 'Server error', error: error.message || error });
     }
 };
 
@@ -50,8 +73,14 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const accesstoken = await accessTokenGenerate(user);
-        const refreshToken = await refreshTokenGenerate(user);
+        const userRoles = await UserRole.find({ userId: user._id }).populate('roleId');
+        const roles = userRoles.map(ur => ur.roleId?.name).filter(Boolean);
+        if (roles.length === 0) {
+            roles.push('user');
+        }
+
+        const accesstoken = await accessTokenGenerate(user, roles);
+        const refreshToken = await refreshTokenGenerate(user, roles);
 
         res.cookie('accessToken', accesstoken, {
             httpOnly: true,
@@ -68,12 +97,23 @@ export const login = async (req, res) => {
         });
 
         await redisClient.set(`refreshToken:${user._id}`, refreshToken, {
-            EX: 30 * 24 * 60 * 60, // 30 days
+            EX: 7 * 24 * 60 * 60, // 7 days
         });
 
-        res.status(200).json({ message: 'Login successful', user, accesstoken, refreshToken });
+        res.status(200).json({
+            message: 'Login successful',
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                isVerified: user.isVerified,
+                roles
+            },
+            accesstoken,
+            refreshToken
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        res.status(500).json({ message: 'Server error', error: error.message || error });
     }
 };
 
@@ -89,7 +129,7 @@ export const generateOtp = async (req, res) => {
         const otp = crypto.randomInt(100000, 999999).toString();
 
         await redisClient.set(`otp:${user._id}`, otp, {
-            EX: 5 * 60, // 5 minutes
+            EX: 2 * 60, // 5 minutes
         });
 
         res.status(200).json({ message: 'OTP generated successfully', otp });

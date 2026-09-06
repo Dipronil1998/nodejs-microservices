@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { accessTokenGenerate } from '../utils/token.js';
 import User from '../models/user.js';
+import UserRole from '../models/userRole.js';
 import { redisClient } from '../config/redis.js';
 
 export const createAccessToken = async (req, res) => {
@@ -33,7 +34,20 @@ export const createAccessToken = async (req, res) => {
         // Create new access token
 
         const user = await User.findById(decoded.id);
-        const accessToken = await accessTokenGenerate(user);
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: 'User not found'
+            });
+        }
+
+        const userRoles = await UserRole.find({ userId: user._id }).populate('roleId');
+        const roles = userRoles.map(ur => ur.roleId?.name).filter(Boolean);
+        if (roles.length === 0) {
+            roles.push('user');
+        }
+
+        const accessToken = await accessTokenGenerate(user, roles);
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
