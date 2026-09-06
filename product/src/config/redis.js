@@ -11,7 +11,7 @@ redisClient.on("error", (err) => {
 async function connectRedis() {
     try {
         await redisClient.connect();
-        console.log("Redis connected from post service");
+        console.log("Redis connected from product service");
     } catch (error) {
         console.error("Failed to connect Redis:", error);
         throw error;

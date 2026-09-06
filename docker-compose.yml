@@ -23,24 +23,24 @@ services:
       - ./auth:/app
       - /app/node_modules
 
-  post:
-    build: ./post
+  product:
+    build: ./product
 
     ports:
       - '3002:3002'
 
     depends_on:
-      - post-db
+      - product-db
       - redis
 
     environment:
       PORT: 3002
       JWT_SECRET: dipronil_secret_key
-      MONGO_URL: mongodb://post-db:27017/postdb
+      MONGO_URL: mongodb://product-db:27017/productdb
       REDIS_CLIENT_URL: redis://redis:6379
 
     volumes:
-      - ./post:/app
+      - ./product:/app
       - /app/node_modules
 
   nginx:
@@ -51,7 +51,7 @@ services:
 
     depends_on:
       - auth
-      - post
+      - product
 
   auth-db:
     image: mongo
@@ -62,14 +62,14 @@ services:
     volumes:
       - auth-data:/data/db
 
-  post-db:
+  product-db:
     image: mongo
 
     ports:
       - '27018:27017'
 
     volumes:
-      - post-data:/data/db
+      - product-data:/data/db
 
   redis:
     image: redis:7-alpine
@@ -85,5 +85,5 @@ services:
 
 volumes:
   auth-data:
-  post-data:
+  product-data:
   redis-data:
