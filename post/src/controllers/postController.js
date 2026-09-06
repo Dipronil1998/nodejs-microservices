@@ -4,9 +4,13 @@ import axios from "axios";
 export const createPost = async (req, res) => {
   try {
     const { title, content, image } = req.body;
-    const userId = req.headers["x-User-id"];
-    console.log(userId,"DPPPPP",req.headers);
-    
+    const userId = req.headers["x-user-id"];
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized: User ID not found in headers"
+      });
+    }
 
     const post = await Post.create({
       userId,
@@ -36,7 +40,6 @@ export const getAllPosts = async (req, res) => {
     const updatedPosts = await Promise.all(
       posts.map(async (post) => {
         try {
-          
           const response = await axios.get(
             `http://auth:3001/api/v1/auth/user/${post.userId}`
           );
@@ -56,27 +59,22 @@ export const getAllPosts = async (req, res) => {
     res.status(200).json({
       message: "Posts fetched successfully",
       posts: updatedPosts
-
     });
 
   } catch (error) {
-
     res.status(500).json({
-
       message: "Server Error",
-
       error: error.message
-
     });
-
   }
-
 };
 
 export const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, image } = req.body;
+    const userId = req.headers["x-user-id"];
+
     const post = await Post.findById(id);
 
     if (!post) {
@@ -86,7 +84,7 @@ export const updatePost = async (req, res) => {
     }
 
     // OWNERSHIP CHECK
-    if (post.userId.toString() !== req.user.id) {
+    if (post.userId.toString() !== userId) {
       return res.status(403).json({
         message: "You can update only your own post"
       });
@@ -113,6 +111,7 @@ export const updatePost = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.headers["x-user-id"];
 
     const post = await Post.findById(id);
 
@@ -123,7 +122,7 @@ export const deletePost = async (req, res) => {
     }
 
     // OWNERSHIP CHECK
-    if (post.userId.toString() !== req.user.id) {
+    if (post.userId.toString() !== userId) {
       return res.status(403).json({
         message: "You can delete only your own post"
       });
