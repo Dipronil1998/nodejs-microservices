@@ -41,13 +41,15 @@ export const getAllPosts = async (req, res) => {
       posts.map(async (post) => {
         try {
           const response = await axios.get(
-            `http://auth:3001/api/v1/auth/user/${post.userId}`
+            `http://auth:3001/api/v1/user/${post.userId}`
           );
           return {
             ...post.toObject(),
-            user: response.data
+            user: response.data.data || response.data
           };
         } catch (error) {
+          console.log("error", error.message);
+
           return {
             ...post.toObject(),
             user: null
