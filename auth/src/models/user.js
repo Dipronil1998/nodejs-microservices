@@ -18,11 +18,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'vendor'],
+    default: 'user'
+  },
   isVerified: {
     type: Boolean,
     default: false
   }
-}, { timestamps: true }); 
+}, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
 

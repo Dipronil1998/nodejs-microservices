@@ -79,6 +79,9 @@ export const verifyJWT = (req, res) => {
         if (decoded.email) {
             res.setHeader("X-User-Email", decoded.email);
         }
+        if (decoded.role) {
+            res.setHeader("X-User-Role", decoded.role);
+        }
         console.log("X-User-Id", decoded.id);
 
         return res.status(200).json({

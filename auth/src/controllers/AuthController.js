@@ -7,7 +7,7 @@ import { accessTokenGenerate, refreshTokenGenerate } from '../utils/token.js';
 
 export const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, role } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -16,7 +16,12 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = new User({ username, email, password: hashedPassword });
+        const user = new User({
+            username,
+            email,
+            password: hashedPassword,
+            ...(role && { role })
+        });
         await user.save();
 
         res.status(201).json({ message: 'User registered successfully', user });

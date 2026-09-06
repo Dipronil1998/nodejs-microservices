@@ -3,7 +3,7 @@ import User from '../models/user.js';
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
-      .select("username email");
+      .select("username email role");
 
     if (!user) {
       return res.status(404).json({
@@ -22,7 +22,7 @@ export const getUserById = async (req, res) => {
 export const getUsers = async (req, res) => {
   try {
     const user = await User.find()
-      .select("username email _id isVerified createdAt");
+      .select("username email _id role isVerified createdAt");
 
     if (user.length === 0) {
       return res.status(404).json({
