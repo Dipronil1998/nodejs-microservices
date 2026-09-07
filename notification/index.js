@@ -15,7 +15,6 @@ app.get('/', (req, res) => {
 });
 
 // Mount notification routes
-app.use('/api/v1/notification', notificationRoutes);
 app.use('/api/v1/email', notificationRoutes);
 
 app.listen(port, () => {
