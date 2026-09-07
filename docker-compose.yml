@@ -12,12 +12,8 @@ services:
       - auth-db
       - redis
 
-    environment:
-      PORT: 3001
-      MONGO_URL: mongodb://auth-db:27017/authdb
-      JWT_SECRET_ACCESS: dipronil_secret_key
-      JWT_SECRET_REFRESH: dipronil_refresh_key
-      REDIS_CLIENT_URL: redis://redis:6379
+    env_file:
+      - ./auth/.env
 
     volumes:
       - ./auth:/app
@@ -33,11 +29,8 @@ services:
       - product-db
       - redis
 
-    environment:
-      PORT: 3002
-      JWT_SECRET: dipronil_secret_key
-      MONGO_URL: mongodb://product-db:27017/productdb
-      REDIS_CLIENT_URL: redis://redis:6379
+    env_file:
+      - ./product/.env
 
     volumes:
       - ./product:/app
