@@ -175,9 +175,10 @@ export const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // OWNERSHIP CHECK
+    // OWNERSHIP CHECK (Admin can update any product, vendor can only update their own)
     // ==========================================
-    if (product.userId.toString() !== userId) {
+    const userRoles = req.userRoles || [];
+    if (product.userId.toString() !== userId && !userRoles.includes('admin')) {
       return res.status(403).json({
         message: "You can update only your own product"
       });
@@ -254,7 +255,8 @@ export const deleteProduct = async (req, res) => {
       });
     }
 
-    if (product.userId.toString() !== userId) {
+    const userRoles = req.userRoles || [];
+    if (product.userId.toString() !== userId && !userRoles.includes('admin')) {
       return res.status(403).json({
         message: "You can delete only your own product"
       });

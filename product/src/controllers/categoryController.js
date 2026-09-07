@@ -146,8 +146,9 @@ export const updateCategory = async (req, res) => {
       });
     }
 
-    // Ownership check
-    if (category.userId.toString() !== userId) {
+    // Ownership / Admin check
+    const userRoles = req.userRoles || [];
+    if (category.userId.toString() !== userId && !userRoles.includes('admin')) {
       return res.status(403).json({
         message: "You can update only your own category"
       });
@@ -216,8 +217,9 @@ export const deleteCategory = async (req, res) => {
       });
     }
 
-    // Ownership check
-    if (category.userId.toString() !== userId) {
+    // Ownership / Admin check
+    const userRoles = req.userRoles || [];
+    if (category.userId.toString() !== userId && !userRoles.includes('admin')) {
       return res.status(403).json({
         message: "You can delete only your own category"
       });

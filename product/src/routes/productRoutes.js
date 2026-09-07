@@ -1,5 +1,5 @@
 import express from "express";
-
+import roleCheck from "../middleware/roleCheck.js";
 import {
     createProduct,
     getAllProducts,
@@ -14,9 +14,9 @@ const router = express.Router();
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 
-// Protected
-router.post("/", createProduct);
-router.put("/:id", updateProduct);
-router.delete("/:id", deleteProduct);
+// Protected (requires admin or vendor role)
+router.post("/", roleCheck(['admin', 'vendor']), createProduct);
+router.put("/:id", roleCheck(['admin', 'vendor']), updateProduct);
+router.delete("/:id", roleCheck(['admin', 'vendor']), deleteProduct);
 
 export default router;

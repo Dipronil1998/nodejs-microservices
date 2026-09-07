@@ -2,19 +2,18 @@ import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
     try {
-        const authHeader = req.cookies.accessToken;
-        console.log(authHeader," authHeader");
-        
+        const token = req.cookies?.accessToken;
 
-        if (!authHeader) {
+        console.log(token, " accessToken cookie");
+
+        if (!token) {
             return res.status(401).json({
                 message: "No token provided"
             });
         }
 
-
         const decoded = jwt.verify(
-            authHeader,
+            token,
             process.env.JWT_SECRET_ACCESS
         );
 
@@ -26,7 +25,6 @@ const authMiddleware = (req, res, next) => {
             message: "Invalid token"
         });
     }
-
 };
 
 export default authMiddleware;

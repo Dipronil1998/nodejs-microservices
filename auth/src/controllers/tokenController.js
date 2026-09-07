@@ -76,9 +76,18 @@ export const createAccessToken = async (req, res) => {
 };
 
 export const verifyJWT = (req, res) => {
-    const token = req.cookies.accessToken;
+    const token = req.cookies?.accessToken;
+    const originalMethod = req.headers['x-original-method'];
 
     if (!token) {
+        // Allow public GET requests without token
+        if (originalMethod === 'GET') {
+            return res.status(200).json({
+                status: true,
+                message: 'Public GET access granted'
+            });
+        }
+
         return res.status(401).json({
             status: false,
             message: 'No access token provided'
@@ -105,6 +114,15 @@ export const verifyJWT = (req, res) => {
         });
     } catch (error) {
         console.error('Error verifying access token:', error);
+
+        // If GET request but token is expired or invalid, still permit public access without identity headers
+        if (originalMethod === 'GET') {
+            return res.status(200).json({
+                status: true,
+                message: 'Public GET access granted (unauthenticated)'
+            });
+        }
+
         return res.status(401).json({
             status: false,
             message: 'Invalid or expired access token'
