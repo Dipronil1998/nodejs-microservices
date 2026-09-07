@@ -3,6 +3,7 @@ import Role from '../models/role.js';
 import UserRole from '../models/userRole.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import axios from 'axios';
 
 import { redisClient } from '../config/redis.js';
 import { accessTokenGenerate, refreshTokenGenerate } from '../utils/token.js';
@@ -121,6 +122,10 @@ export const generateOtp = async (req, res) => {
     try {
         const { email } = req.body;
 
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -129,13 +134,42 @@ export const generateOtp = async (req, res) => {
         const otp = crypto.randomInt(100000, 999999).toString();
 
         await redisClient.set(`otp:${user._id}`, otp, {
-            EX: 2 * 60, // 5 minutes
+            EX: 2 * 60, // 2 minutes
         });
 
-        res.status(200).json({ message: 'OTP generated successfully', otp });
+        // Send email via Notification Service
+        const notificationServiceUrl = process.env.NOTIFICATION_SERVICE_URL || 'http://notification:3003';
+        try {
+            await axios.post(`${notificationServiceUrl}/api/v1/email/send-email`, {
+                to: user.email,
+                subject: 'Your OTP Verification Code',
+                body: `Your OTP is: ${otp}. It is valid for 2 minutes.`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <h2 style="color: #2d3748; text-align: center;">Account Verification</h2>
+                        <p>Hello <strong>${user.username || 'User'}</strong>,</p>
+                        <p>Your one-time password (OTP) for verification is:</p>
+                        <div style="background-color: #edf2f7; padding: 14px 24px; font-size: 28px; font-weight: bold; letter-spacing: 6px; text-align: center; border-radius: 6px; color: #2b6cb0; margin: 20px 0;">
+                            ${otp}
+                        </div>
+                        <p style="color: #718096; font-size: 14px;">This OTP is valid for <strong>2 minutes</strong>. Please do not share it with anyone.</p>
+                    </div>
+                `
+            });
+        } catch (notificationError) {
+            console.error('Failed to send OTP email via notification service:', notificationError.response?.data || notificationError.message);
+            return res.status(500).json({
+                message: 'Failed to send OTP email. Please try again later.',
+                error: notificationError.response?.data?.message || notificationError.message
+            });
+        }
+
+        res.status(200).json({
+            message: 'OTP generated and sent to email successfully'
+        });
     } catch (error) {
         console.error('Error generating OTP:', error);
-        res.status(500).json({ message: 'Server error', error });
+        res.status(500).json({ message: 'Server error', error: error.message || error });
     }
 };
 
