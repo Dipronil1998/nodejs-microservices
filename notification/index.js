@@ -5,10 +5,13 @@ import { connectRedis } from './src/config/redis.js';
 import { connectRabbitMQ } from './src/config/rabbitmq.js';
 import { startEmailConsumer } from './src/consumers/emailConsumer.js';
 import { requestLogger } from './src/middleware/requestLogger.js';
+import { rateLimiter } from './src/middleware/rateLimiter.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(requestLogger('Notification Service'));
+app.use(rateLimiter());
 const port = process.env.PORT || 3003;
 
 connectRedis();
