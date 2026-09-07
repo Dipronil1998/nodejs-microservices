@@ -3,7 +3,7 @@ import Role from '../models/role.js';
 import UserRole from '../models/userRole.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import axios from 'axios';
+import { publishToQueue } from '../config/rabbitmq.js';
 
 import { redisClient } from '../config/redis.js';
 import { accessTokenGenerate, refreshTokenGenerate } from '../utils/token.js';
@@ -137,10 +137,9 @@ export const generateOtp = async (req, res) => {
             EX: 2 * 60, // 2 minutes
         });
 
-        // Send email via Notification Service
-        const notificationServiceUrl = process.env.NOTIFICATION_SERVICE_URL || 'http://notification:3003';
+        // Publish message to RabbitMQ email_queue
         try {
-            await axios.post(`${notificationServiceUrl}/api/v1/email/send-email`, {
+            await publishToQueue('email_queue', {
                 to: user.email,
                 subject: 'Your OTP Verification Code',
                 body: `Your OTP is: ${otp}. It is valid for 2 minutes.`,
@@ -156,16 +155,16 @@ export const generateOtp = async (req, res) => {
                     </div>
                 `
             });
-        } catch (notificationError) {
-            console.error('Failed to send OTP email via notification service:', notificationError.response?.data || notificationError.message);
+        } catch (queueError) {
+            console.error('Failed to publish OTP email to RabbitMQ:', queueError.message || queueError);
             return res.status(500).json({
-                message: 'Failed to send OTP email. Please try again later.',
-                error: notificationError.response?.data?.message || notificationError.message
+                message: 'Failed to queue OTP email for delivery. Please try again.',
+                error: queueError.message || queueError
             });
         }
 
         res.status(200).json({
-            message: 'OTP generated and sent to email successfully'
+            message: 'OTP generated and queued for email delivery'
         });
     } catch (error) {
         console.error('Error generating OTP:', error);
