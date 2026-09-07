@@ -5,12 +5,14 @@ import cookieParser from 'cookie-parser';
 import connectToMongoDB from './src/db/connector.js';
 import { connectRedis } from './src/config/redis.js';
 import { connectRabbitMQ } from './src/config/rabbitmq.js';
+import { requestLogger } from './src/middleware/requestLogger.js';
 import auth from './src/routes/authRoutes.js';
 import user from './src/routes/userRoutes.js';
 import token from './src/routes/tokenRoutes.js';
 import role from './src/routes/roleRoutes.js';
 
 const app = express();
+app.use(requestLogger('Auth Service'));
 app.use(cookieParser());
 const port = process.env.PORT || 3001;
 

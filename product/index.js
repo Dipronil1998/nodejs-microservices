@@ -1,17 +1,19 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
-
 import connectToMongoDB from './src/db/connector.js';
-
+import { connectRedis } from './src/config/redis.js';
+import { requestLogger } from './src/middleware/requestLogger.js';
+import product from './src/routes/productRoutes.js';
+import category from './src/routes/categoryRoutes.js';
 
 const app = express();
-const port = process.env.PORT || 5002;
-import product from './src/routes/productRoutes.js'
-import category from './src/routes/categoryRoutes.js'
-import { connectRedis } from './src/config/redis.js';
+app.use(requestLogger('Product Service'));
+const port = process.env.PORT || 3002;
+
 connectToMongoDB();
 connectRedis();
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
