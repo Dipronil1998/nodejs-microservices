@@ -36,6 +36,22 @@ services:
       - ./product:/app
       - /app/node_modules
 
+  notification:
+    build: ./notification
+
+    ports:
+      - '3003:3003'
+
+    depends_on:
+      - redis
+
+    env_file:
+      - ./notification/.env
+
+    volumes:
+      - ./notification:/app
+      - /app/node_modules
+
   nginx:
     build: ./nginx
 
