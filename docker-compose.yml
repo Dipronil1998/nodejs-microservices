@@ -61,6 +61,7 @@ services:
     depends_on:
       - auth
       - product
+      - notification
 
   auth-db:
     image: mongo
