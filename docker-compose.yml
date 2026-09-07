@@ -11,6 +11,7 @@ services:
     depends_on:
       - auth-db
       - redis
+      - rabbitmq
 
     env_file:
       - ./auth/.env
@@ -28,6 +29,7 @@ services:
     depends_on:
       - product-db
       - redis
+      - rabbitmq
 
     env_file:
       - ./product/.env
@@ -44,6 +46,7 @@ services:
 
     depends_on:
       - redis
+      - rabbitmq
 
     env_file:
       - ./notification/.env
@@ -92,8 +95,27 @@ services:
 
     command: redis-server --appendonly yes
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
 
 volumes:
   auth-data:
+    name: nodejs-microservices_auth-data
   product-data:
+    name: nodejs-microservices_product-data
   redis-data:
+    name: nodejs-microservices_redis-data
+  rabbitmq-data:
+    name: nodejs-microservices_rabbitmq-data
