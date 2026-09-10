@@ -4,35 +4,6 @@ import axios from "axios";
 import { redisClient } from "../config/redis.js";
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://auth:3001";
-const CACHE_TTL_SECONDS = 3600; // 1 hour cache duration
-
-/**
- * Invalidate Redis cache for a user or specific address
- */
-const clearAddressCache = async (userId, addressId = null) => {
-  try {
-    if (!redisClient.isReady) return;
-
-    const keysToDelete = [];
-
-    if (addressId) {
-      const addressSpecificKeys = await redisClient.keys(`address:${addressId}*`);
-      keysToDelete.push(...addressSpecificKeys);
-    }
-
-    if (userId) {
-      const userKeys = await redisClient.keys(`address:user:${userId}*`);
-      const trashKeys = await redisClient.keys(`address:trash:${userId}*`);
-      keysToDelete.push(...userKeys, ...trashKeys);
-    }
-
-    if (keysToDelete.length > 0) {
-      await redisClient.del(keysToDelete);
-    }
-  } catch (error) {
-    console.error("Redis Cache Invalidation Error:", error.message);
-  }
-};
 
 /**
  * Helper to fetch user details from Auth service
@@ -111,8 +82,8 @@ export const createAddress = async (req, res) => {
       isDefault: shouldBeDefault
     });
 
-    // Invalidate user address cache
-    await clearAddressCache(userId);
+    // Invalidate user addresses cache
+    await redisClient.del(`addresses:${userId}`);
 
     return res.status(201).json({
       success: true,
@@ -129,7 +100,7 @@ export const createAddress = async (req, res) => {
 };
 
 /**
- * @desc    Get all addresses for logged-in user (Cached with Redis)
+ * @desc    Get all addresses for logged-in user
  * @route   GET /api/v1/address
  * @access  Protected
  */
@@ -151,20 +122,16 @@ export const getAllAddresses = async (req, res) => {
       });
     }
 
-    // Generate Redis Cache Key
-    const cacheKey = `address:user:${targetUserId || "all"}:type=${req.query.addressType || ""}:def=${req.query.isDefault || ""}:del=${req.query.onlyDeleted || req.query.includeDeleted || "active"}:pop=${req.query.populateUser || ""}`;
-
-    if (redisClient.isReady) {
-      const cachedData = await redisClient.get(cacheKey);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        return res.status(200).json({
-          success: true,
-          message: "Addresses fetched successfully (from cache)",
-          count: parsed.length,
-          data: parsed
-        });
-      }
+    // Check Redis Cache
+    const cachedAddresses = await redisClient.get(`addresses:${targetUserId}`);
+    if (cachedAddresses && !req.query.addressType && req.query.isDefault === undefined && !req.query.onlyDeleted) {
+      const parsed = JSON.parse(cachedAddresses);
+      return res.status(200).json({
+        success: true,
+        message: "Addresses fetched successfully",
+        count: parsed.length,
+        data: parsed
+      });
     }
 
     const filter = {};
@@ -203,10 +170,10 @@ export const getAllAddresses = async (req, res) => {
       );
     }
 
-    // Save result to Redis cache
-    if (redisClient.isReady) {
-      await redisClient.set(cacheKey, JSON.stringify(formattedAddresses), {
-        EX: CACHE_TTL_SECONDS
+    // Set Redis Cache
+    if (!req.query.addressType && req.query.isDefault === undefined && !req.query.onlyDeleted) {
+      await redisClient.set(`addresses:${targetUserId}`, JSON.stringify(formattedAddresses), {
+        EX: 3600
       });
     }
 
@@ -226,7 +193,7 @@ export const getAllAddresses = async (req, res) => {
 };
 
 /**
- * @desc    Get single address by ID (Cached with Redis)
+ * @desc    Get single address by ID
  * @route   GET /api/v1/address/:id
  * @access  Protected
  */
@@ -243,27 +210,24 @@ export const getAddressById = async (req, res) => {
       });
     }
 
-    const includeDeleted = req.query.includeDeleted === "true";
-    const cacheKey = `address:${id}:del=${includeDeleted}:pop=${req.query.populateUser || ""}`;
-
-    if (redisClient.isReady) {
-      const cachedData = await redisClient.get(cacheKey);
-      if (cachedData) {
-        const address = JSON.parse(cachedData);
-        if (userId && address.userId?.toString() !== userId && !userRoles.includes("admin")) {
-          return res.status(403).json({
-            success: false,
-            message: "Forbidden: You do not have permission to access this address"
-          });
-        }
-        return res.status(200).json({
-          success: true,
-          message: "Address retrieved successfully (from cache)",
-          data: address
+    // Check Redis Cache
+    const cachedAddress = await redisClient.get(`address:${id}`);
+    if (cachedAddress) {
+      const parsed = JSON.parse(cachedAddress);
+      if (userId && parsed.userId?.toString() !== userId && !userRoles.includes("admin")) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: You do not have permission to access this address"
         });
       }
+      return res.status(200).json({
+        success: true,
+        message: "Address retrieved successfully",
+        data: parsed
+      });
     }
 
+    const includeDeleted = req.query.includeDeleted === "true";
     const filter = { _id: id };
     if (!includeDeleted) {
       filter.isDeleted = false;
@@ -296,11 +260,10 @@ export const getAddressById = async (req, res) => {
       ...(user ? { user } : {})
     };
 
-    if (redisClient.isReady) {
-      await redisClient.set(cacheKey, JSON.stringify(responseData), {
-        EX: CACHE_TTL_SECONDS
-      });
-    }
+    // Set Redis Cache
+    await redisClient.set(`address:${id}`, JSON.stringify(responseData), {
+      EX: 3600
+    });
 
     return res.status(200).json({
       success: true,
@@ -396,7 +359,8 @@ export const updateAddress = async (req, res) => {
     await address.save();
 
     // Invalidate Redis cache
-    await clearAddressCache(address.userId, address._id);
+    await redisClient.del(`addresses:${address.userId}`);
+    await redisClient.del(`address:${id}`);
 
     return res.status(200).json({
       success: true,
@@ -466,7 +430,9 @@ export const deleteAddress = async (req, res) => {
     }
 
     // Invalidate Redis cache
-    await clearAddressCache(address.userId, address._id);
+    await redisClient.del(`addresses:${address.userId}`);
+    await redisClient.del(`address:${id}`);
+    await redisClient.del(`addresses:trash:${address.userId}`);
 
     return res.status(200).json({
       success: true,
@@ -525,7 +491,9 @@ export const restoreAddress = async (req, res) => {
     await address.restore();
 
     // Invalidate Redis cache
-    await clearAddressCache(address.userId, address._id);
+    await redisClient.del(`addresses:${address.userId}`);
+    await redisClient.del(`address:${id}`);
+    await redisClient.del(`addresses:trash:${address.userId}`);
 
     return res.status(200).json({
       success: true,
@@ -542,7 +510,7 @@ export const restoreAddress = async (req, res) => {
 };
 
 /**
- * @desc    Get all soft-deleted addresses (Trash bin - Cached with Redis)
+ * @desc    Get all soft-deleted addresses (Trash bin)
  * @route   GET /api/v1/address/trash
  * @access  Protected
  */
@@ -564,19 +532,16 @@ export const getDeletedAddresses = async (req, res) => {
       });
     }
 
-    const cacheKey = `address:trash:${targetUserId || "all"}`;
-
-    if (redisClient.isReady) {
-      const cachedData = await redisClient.get(cacheKey);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        return res.status(200).json({
-          success: true,
-          message: "Deleted addresses fetched successfully (from cache)",
-          count: parsed.length,
-          data: parsed
-        });
-      }
+    // Check Redis Cache
+    const cachedTrash = await redisClient.get(`addresses:trash:${targetUserId}`);
+    if (cachedTrash) {
+      const parsed = JSON.parse(cachedTrash);
+      return res.status(200).json({
+        success: true,
+        message: "Deleted addresses fetched successfully",
+        count: parsed.length,
+        data: parsed
+      });
     }
 
     const filter = { isDeleted: true };
@@ -586,11 +551,10 @@ export const getDeletedAddresses = async (req, res) => {
 
     const deletedAddresses = await Address.find(filter).sort({ deletedAt: -1 });
 
-    if (redisClient.isReady) {
-      await redisClient.set(cacheKey, JSON.stringify(deletedAddresses), {
-        EX: CACHE_TTL_SECONDS
-      });
-    }
+    // Set Redis Cache
+    await redisClient.set(`addresses:trash:${targetUserId}`, JSON.stringify(deletedAddresses), {
+      EX: 3600
+    });
 
     return res.status(200).json({
       success: true,
@@ -652,7 +616,8 @@ export const setDefaultAddress = async (req, res) => {
     await address.save();
 
     // Invalidate Redis cache
-    await clearAddressCache(address.userId, address._id);
+    await redisClient.del(`addresses:${address.userId}`);
+    await redisClient.del(`address:${id}`);
 
     return res.status(200).json({
       success: true,
@@ -706,7 +671,9 @@ export const hardDeleteAddress = async (req, res) => {
     await Address.findByIdAndDelete(id);
 
     // Invalidate Redis cache
-    await clearAddressCache(address.userId, address._id);
+    await redisClient.del(`addresses:${address.userId}`);
+    await redisClient.del(`address:${id}`);
+    await redisClient.del(`addresses:trash:${address.userId}`);
 
     return res.status(200).json({
       success: true,
