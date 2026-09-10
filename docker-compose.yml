@@ -73,6 +73,24 @@ services:
       - ./address:/app
       - /app/node_modules
 
+  order:
+    build: ./order
+
+    ports:
+      - '3005:3005'
+
+    depends_on:
+      - order-db
+      - redis
+      - rabbitmq
+
+    env_file:
+      - ./order/.env
+
+    volumes:
+      - ./order:/app
+      - /app/node_modules
+
   nginx:
     build: ./nginx
 
@@ -84,6 +102,7 @@ services:
       - product
       - notification
       - address
+      - order
 
   auth-db:
     image: mongo
@@ -111,6 +130,15 @@ services:
 
     volumes:
       - address-data:/data/db
+
+  order-db:
+    image: mongo
+
+    ports:
+      - '27020:27017'
+
+    volumes:
+      - order-data:/data/db
 
   redis:
     image: redis:7-alpine
@@ -145,6 +173,8 @@ volumes:
     name: nodejs-microservices_product-data
   address-data:
     name: nodejs-microservices_address-data
+  order-data:
+    name: nodejs-microservices_order-data
   redis-data:
     name: nodejs-microservices_redis-data
   rabbitmq-data:
