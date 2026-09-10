@@ -164,7 +164,9 @@ export const generateOtp = async (req, res) => {
         }
 
         res.status(200).json({
-            message: 'OTP generated and queued for email delivery'
+            status: true,
+            message: 'OTP generated and queued for email delivery',
+            otp
         });
     } catch (error) {
         console.error('Error generating OTP:', error);
@@ -219,8 +221,19 @@ export const verifyOtp = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.clearCookie('accessToken');
-        res.clearCookie('refreshToken');
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/'
+        });
+
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/'
+        });
         return res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
         console.error('Error during logout:', error);

@@ -55,6 +55,24 @@ services:
       - ./notification:/app
       - /app/node_modules
 
+  address:
+    build: ./address
+
+    ports:
+      - '3004:3004'
+
+    depends_on:
+      - address-db
+      - redis
+      - rabbitmq
+
+    env_file:
+      - ./address/.env
+
+    volumes:
+      - ./address:/app
+      - /app/node_modules
+
   nginx:
     build: ./nginx
 
@@ -65,6 +83,7 @@ services:
       - auth
       - product
       - notification
+      - address
 
   auth-db:
     image: mongo
@@ -83,6 +102,15 @@ services:
 
     volumes:
       - product-data:/data/db
+
+  address-db:
+    image: mongo
+
+    ports:
+      - '27019:27017'
+
+    volumes:
+      - address-data:/data/db
 
   redis:
     image: redis:7-alpine
@@ -115,6 +143,8 @@ volumes:
     name: nodejs-microservices_auth-data
   product-data:
     name: nodejs-microservices_product-data
+  address-data:
+    name: nodejs-microservices_address-data
   redis-data:
     name: nodejs-microservices_redis-data
   rabbitmq-data:
