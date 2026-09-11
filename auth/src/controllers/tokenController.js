@@ -76,16 +76,7 @@ export const createAccessToken = async (req, res) => {
 };
 
 export const verifyJWT = (req, res) => {
-    let token = req.cookies?.accessToken;
-
-    if (!token && req.headers['authorization']) {
-        const authHeader = req.headers['authorization'];
-        if (authHeader.startsWith('Bearer ')) {
-            token = authHeader.substring(7).trim();
-        } else {
-            token = authHeader.trim();
-        }
-    }
+    const token = req.cookies?.accessToken;
 
     const originalMethod = req.headers['x-original-method'];
     const originalUri = req.headers['x-original-uri'] || '';
