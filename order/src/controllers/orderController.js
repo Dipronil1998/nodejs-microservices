@@ -4,6 +4,7 @@ import OrderItem from "../models/orderItem.js";
 import Cart from "../models/cart.js";
 import axios from "axios";
 import { publishToQueue } from "../config/rabbitmq.js";
+import { generateOrderEmailHtml } from "../utils/generateOrderEmailHtml.js";
 
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || "http://product:3002";
 const ADDRESS_SERVICE_URL = process.env.ADDRESS_SERVICE_URL || "http://address:3004";
@@ -58,6 +59,46 @@ const fetchUserDetails = async (userId) => {
     return response.data?.data || response.data?.user || response.data;
   } catch (error) {
     return null;
+  }
+};
+
+
+
+/**
+ * Helper to dispatch Order Confirmation email job to RabbitMQ email_queue
+ */
+const sendOrderConfirmationEmail = async (order, reqUser, userId) => {
+  try {
+    let email = reqUser?.email;
+    let username = reqUser?.username || reqUser?.name;
+
+    if (!email) {
+      const user = await fetchUserDetails(userId);
+      email = user?.email;
+      username = username || user?.username || user?.name;
+    }
+
+    if (!email) {
+      console.warn(`[RabbitMQ Order Producer] No recipient email found for user ${userId}. Skipping email.`);
+      return false;
+    }
+
+    const htmlContent = generateOrderEmailHtml(order, username);
+    const plainText = `Thank you for your order! Your Order #${order.orderNumber} for ₹${order.pricing?.totalAmount} has been placed successfully. Payment Method: ${order.payment?.method || 'COD'}.`;
+
+    const dispatched = await publishToQueue("email_queue", {
+      to: email,
+      subject: `Order Confirmation - #${order.orderNumber}`,
+      body: plainText,
+      html: htmlContent,
+      orderNumber: order.orderNumber,
+      totalAmount: order.pricing?.totalAmount
+    });
+
+    return dispatched;
+  } catch (err) {
+    console.error(`[RabbitMQ Order Producer] Failed to dispatch order email for #${order?.orderNumber}:`, err.message || err);
+    return false;
   }
 };
 
@@ -231,17 +272,8 @@ export const checkoutCart = async (req, res) => {
       createdAt: order.createdAt
     });
 
-    // Optionally notify customer via notification service
-    const user = await fetchUserDetails(userId);
-    if (user && user.email) {
-      publishToQueue("email_queue", {
-        to: user.email,
-        subject: `Order Confirmation - ${order.orderNumber}`,
-        body: `Thank you for your order! Your Order #${order.orderNumber} for ₹${order.pricing.totalAmount} has been placed successfully.`,
-        orderNumber: order.orderNumber,
-        totalAmount: order.pricing.totalAmount
-      });
-    }
+    // 9. Dispatch Order Confirmation Email via RabbitMQ
+    await sendOrderConfirmationEmail(order, req.user, userId);
 
     return res.status(201).json({
       success: true,
@@ -407,6 +439,9 @@ export const createDirectOrder = async (req, res) => {
       totalAmount: order.pricing.totalAmount
     });
 
+    // Dispatch Order Confirmation Email via RabbitMQ
+    await sendOrderConfirmationEmail(order, req.user, userId);
+
     return res.status(201).json({
       success: true,
       message: "Order created successfully",
@@ -468,6 +503,9 @@ export const getAllOrders = async (req, res) => {
     if (req.query.paymentMethod) {
       filter["payment.method"] = req.query.paymentMethod.toUpperCase();
     }
+
+    console.log(filter, "PPPPPPP");
+
 
     const [orders, total] = await Promise.all([
       Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
