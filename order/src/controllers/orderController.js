@@ -68,7 +68,7 @@ const fetchUserDetails = async (userId) => {
  */
 export const checkoutCart = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({
@@ -264,7 +264,7 @@ export const checkoutCart = async (req, res) => {
  */
 export const createDirectOrder = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({
@@ -428,7 +428,7 @@ export const createDirectOrder = async (req, res) => {
  */
 export const getAllOrders = async (req, res) => {
   try {
-    const headerUserId = req.headers["x-user-id"] || req.user?.id;
+    const headerUserId = req.userId;
     const userRoles = req.userRoles || [];
     const isAdmin = userRoles.includes("admin");
 
@@ -502,7 +502,7 @@ export const getAllOrders = async (req, res) => {
 export const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const userRoles = req.userRoles || [];
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -550,7 +550,7 @@ export const getOrderById = async (req, res) => {
 export const getOrderByNumber = async (req, res) => {
   try {
     const { orderNumber } = req.params;
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const userRoles = req.userRoles || [];
 
     const order = await Order.findOne({ orderNumber, isDeleted: false });
@@ -724,7 +724,7 @@ export const updatePaymentStatus = async (req, res) => {
 export const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const userRoles = req.userRoles || [];
     const { reason = "Cancelled by user" } = req.body;
 
@@ -801,7 +801,7 @@ export const cancelOrder = async (req, res) => {
 export const getOrderItems = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const userRoles = req.userRoles || [];
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -851,7 +851,7 @@ export const getOrderItems = async (req, res) => {
 export const softDeleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const userRoles = req.userRoles || [];
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -904,7 +904,7 @@ export const softDeleteOrder = async (req, res) => {
 export const restoreOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const userRoles = req.userRoles || [];
 
     if (!mongoose.Types.ObjectId.isValid(id)) {

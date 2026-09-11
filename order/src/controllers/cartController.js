@@ -25,7 +25,8 @@ const fetchProductDetails = async (productId) => {
  */
 export const getCart = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
+
 
     if (!userId) {
       return res.status(401).json({
@@ -66,7 +67,7 @@ export const getCart = async (req, res) => {
  */
 export const addToCart = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({
@@ -165,7 +166,7 @@ export const addToCart = async (req, res) => {
  */
 export const updateCartItem = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const { productId } = req.params;
     const { quantity } = req.body;
 
@@ -255,7 +256,7 @@ export const updateCartItem = async (req, res) => {
  */
 export const removeFromCart = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
     const { productId } = req.params;
 
     if (!userId) {
@@ -315,7 +316,7 @@ export const removeFromCart = async (req, res) => {
  */
 export const clearCart = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"] || req.user?.id;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({
