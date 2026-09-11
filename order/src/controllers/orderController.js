@@ -4,7 +4,7 @@ import OrderItem from "../models/orderItem.js";
 import Cart from "../models/cart.js";
 import axios from "axios";
 import { publishToQueue } from "../config/rabbitmq.js";
-import { generateOrderEmailHtml } from "../utils/generateOrderEmailHtml.js";
+import { generateOrderEmailHtml, generateOrderCancelEmailHtml } from "../utils/generateOrderEmailHtml.js";
 
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || "http://product:3002";
 const ADDRESS_SERVICE_URL = process.env.ADDRESS_SERVICE_URL || "http://address:3004";
@@ -98,6 +98,45 @@ const sendOrderConfirmationEmail = async (order, reqUser, userId) => {
     return dispatched;
   } catch (err) {
     console.error(`[RabbitMQ Order Producer] Failed to dispatch order email for #${order?.orderNumber}:`, err.message || err);
+    return false;
+  }
+};
+
+/**
+ * Helper to dispatch Order Cancellation email job to RabbitMQ email_queue
+ */
+const sendOrderCancellationEmail = async (order, reason, reqUser, userId) => {
+  try {
+    let email = reqUser?.email;
+    let username = reqUser?.username || reqUser?.name;
+
+    if (!email) {
+      const user = await fetchUserDetails(userId);
+      email = user?.email;
+      username = username || user?.username || user?.name;
+    }
+
+    if (!email) {
+      console.warn(`[RabbitMQ Order Producer] No recipient email found for user ${userId}. Skipping cancellation email.`);
+      return false;
+    }
+
+    const htmlContent = generateOrderCancelEmailHtml(order, reason, username);
+    const plainText = `Your Order #${order.orderNumber} has been cancelled. Reason: ${reason || 'Cancelled by user'}.`;
+
+    const dispatched = await publishToQueue("email_queue", {
+      to: email,
+      subject: `Order Cancelled - #${order.orderNumber}`,
+      body: plainText,
+      html: htmlContent,
+      orderNumber: order.orderNumber,
+      totalAmount: order.pricing?.totalAmount,
+      reason: reason || order.cancellation?.reason
+    });
+
+    return dispatched;
+  } catch (err) {
+    console.error(`[RabbitMQ Order Producer] Failed to dispatch cancellation email for #${order?.orderNumber}:`, err.message || err);
     return false;
   }
 };
@@ -678,6 +717,10 @@ export const updateOrderStatus = async (req, res) => {
       updatedAt: order.updatedAt
     });
 
+    if (upperStatus === "CANCELLED") {
+      await sendOrderCancellationEmail(order, order.cancellation?.reason, req.user, order.userId);
+    }
+
     return res.status(200).json({
       success: true,
       message: `Order status updated to ${upperStatus}`,
@@ -816,6 +859,9 @@ export const cancelOrder = async (req, res) => {
       userId: order.userId,
       reason: order.cancellation.reason
     });
+
+    // Dispatch Cancellation Email via RabbitMQ
+    await sendOrderCancellationEmail(order, order.cancellation.reason, req.user, order.userId);
 
     return res.status(200).json({
       success: true,
