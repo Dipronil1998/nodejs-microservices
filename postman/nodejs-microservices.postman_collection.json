@@ -53,7 +53,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"email\": \"dipronildas.net@gmail.com\",\n    \"password\": \"12345678\"\n}",
+                  "raw": "{\n    \"email\": \"ddas86129@gmail.com\",\n    \"password\": \"12345678\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -87,7 +87,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{ \n    \"email\":\"dipronildas.net@gmail.com\"\n}",
+                  "raw": "{ \n    \"email\":\"ddas86129@gmail.com\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -121,7 +121,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{ \n    \"email\":\"dipronildas.net@gmail.com\",\n    \"otp\":\"100031\"\n}",
+                  "raw": "{ \n    \"email\":\"ddas86129@gmail.com\",\n    \"otp\":\"708456\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -682,6 +682,568 @@
             }
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "ADDRESS",
+      "item": [
+        {
+          "name": "create address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"John Doe\",\n    \"phone\": \"+919876543210\",\n    \"street\": \"123 Baker Street\",\n    \"city\": \"London\",\n    \"state\": \"Greater London\",\n    \"postalCode\": \"NW1 6XE\",\n    \"country\": \"UK\",\n    \"addressType\": \"home\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/address/api/v1/address",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get all address",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost/address/api/v1/address",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get address by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/6aa24fd1d3298e6c908ca912",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "6aa24fd1d3298e6c908ca912"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get Deleted Addresses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/trash",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "trash"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update address",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Dipronil Doe\",\n    \"phone\": \"+919876543210\",\n    \"street\": \"123 Baker Street\",\n    \"city\": \"London\",\n    \"state\": \"Greater London\",\n    \"postalCode\": \"NW1 6XE\",\n    \"country\": \"UK\",\n    \"addressType\": \"home\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/6aa24fd1d3298e6c908ca912",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "6aa24fd1d3298e6c908ca912"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "restore address",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Dipronil Doe\",\n    \"phone\": \"+919876543210\",\n    \"street\": \"123 Baker Street\",\n    \"city\": \"London\",\n    \"state\": \"Greater London\",\n    \"postalCode\": \"NW1 6XE\",\n    \"country\": \"UK\",\n    \"addressType\": \"home\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/6aa24fd1d3298e6c908ca912/restore",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "6aa24fd1d3298e6c908ca912",
+                "restore"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "default address",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Dipronil Doe\",\n    \"phone\": \"+919876543210\",\n    \"street\": \"123 Baker Street\",\n    \"city\": \"London\",\n    \"state\": \"Greater London\",\n    \"postalCode\": \"NW1 6XE\",\n    \"country\": \"UK\",\n    \"addressType\": \"home\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/6aa24fd1d3298e6c908ca912/default",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "6aa24fd1d3298e6c908ca912",
+                "default"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "soft delete address",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/6aa24fd1d3298e6c908ca912",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "6aa24fd1d3298e6c908ca912"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "permanent delete address",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost/address/api/v1/address/6aa24fd1d3298e6c908ca912/permanent",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "address",
+                "api",
+                "v1",
+                "address",
+                "6aa24fd1d3298e6c908ca912",
+                "permanent"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ORDER",
+      "item": [
+        {
+          "name": "cart",
+          "item": [
+            {
+              "name": "get cart",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/cart",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "cart"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add to cart",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"productId\":\"6a9cef9da237ec616bd73aa4\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/cart/items",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "cart",
+                    "items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update cart",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"quantity\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/cart/items/6a9cef9da237ec616bd73aa4",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "cart",
+                    "items",
+                    "6a9cef9da237ec616bd73aa4"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "remove from cart",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/cart/items/6a9cef9da237ec616bd73aa4",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "cart",
+                    "items",
+                    "6a9cef9da237ec616bd73aa4"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "clear cart",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/cart",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "cart"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "order",
+          "item": [
+            {
+              "name": "checkout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"addressId\": \"6aa24fd1d3298e6c908ca912\",\n    \"shippingAddress\": {\n        \"fullName\": \"Subhronil Das\",\n        \"phone\": \"99845523456\",\n        \"street\": \"station road\",\n        \"city\": \"kolkata\",\n        \"state\": \"West bengal\",\n        \"postalCode\": \"700091\"\n    },\n    \"paymentMethod\": \"COD\",\n    \"orderNotes\": \"\",\n    \"discount\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order/checkout",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order",
+                    "checkout"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Direct order",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"productId\":\"6a9cef9da237ec616bd73aa4\",\n    \"quantity\":\"1\",\n    \"addressId\": \"6aa24fd1d3298e6c908ca912\",\n    \"shippingAddress\": {\n        \"fullName\": \"Subhronil Das\",\n        \"phone\": \"99845523456\",\n        \"street\": \"station road\",\n        \"city\": \"kolkata\",\n        \"state\": \"West bengal\",\n        \"postalCode\": \"700091\"\n    },\n    \"paymentMethod\": \"COD\",\n    \"orderNotes\": \"\",\n    \"discount\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order/direct",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order",
+                    "direct"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get all orders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get order by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order/6aa3aad586041511ec2dc51f",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order",
+                    "6aa3aad586041511ec2dc51f"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get order items",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order/6aa3aad586041511ec2dc51f/items",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order",
+                    "6aa3aad586041511ec2dc51f",
+                    "items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get order by order number",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order/number/ORD-20260911-DQOKM",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order",
+                    "number",
+                    "ORD-20260911-DQOKM"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "cancle order",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost/orders/api/v1/order/6aa3aad586041511ec2dc51f/cancel",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "orders",
+                    "api",
+                    "v1",
+                    "order",
+                    "6aa3aad586041511ec2dc51f",
+                    "cancel"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }
