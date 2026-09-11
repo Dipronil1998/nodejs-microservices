@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import connectToMongoDB from './src/db/connector.js';
 import { connectRedis } from './src/config/redis.js';
 import { connectRabbitMQ } from './src/config/rabbitmq.js';
@@ -13,6 +14,7 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(requestLogger('Order Service'));
 app.use(rateLimiter());
+app.use(cookieParser());
 const port = process.env.PORT || 3005;
 
 // Initialize Database and Message Broker

@@ -17,9 +17,12 @@ export const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Call Auth Service API with cookie
+    // Call Auth Service API forwarding the cookie
     const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth:3001';
     const response = await axios.get(`${authServiceUrl}/api/v1/token/verify-token`, {
+      headers: {
+        Cookie: `accessToken=${token}`
+      },
       timeout: 5000
     });
 
